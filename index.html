@@ -10,143 +10,234 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Word Signal™ — Cumulative Web Inc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ================= SECTION 0: BRAND CSS CUSTOM PROPERTIES ================= */
 :root{
-  --brand-bg:#0a0a18;
-  --brand-bg2:#13132b;
-  --brand-panel:#1b1b38;
+  --brand-bg:#07070f;
+  --brand-bg2:#101024;
+  --brand-panel:rgba(23,23,46,.78);
+  --brand-panel-solid:#17172e;
   --brand-primary:#7c3aed;
   --brand-accent:#22d3ee;
   --brand-gold:#fbbf24;
   --brand-magenta:#ec4899;
   --brand-lime:#a3e635;
-  --brand-text:#f4f1ff;
-  --brand-muted:#a7a3c7;
-  --brand-font:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --brand-text:#f5f2ff;
+  --brand-muted:#a9a4cf;
+  --brand-line:#2e2e63;
+  --display-font:"Sora","Segoe UI",system-ui,-apple-system,sans-serif;
+  --brand-font:"Inter","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
   --word-colors:#fbbf24,#22d3ee,#ec4899,#a3e635,#fb923c,#a78bfa,#2dd4bf,#f472b6;
+  --radius:18px;
+  --shadow-lift:0 10px 34px rgba(124,58,237,.35);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
   margin:0;font-family:var(--brand-font);color:var(--brand-text);
-  background:radial-gradient(1200px 800px at 20% -10%,#241b4d 0%,var(--brand-bg) 55%,#050510 100%);
+  background:
+    radial-gradient(900px 620px at 12% -8%,rgba(124,58,237,.28) 0%,transparent 60%),
+    radial-gradient(1000px 700px at 88% 4%,rgba(34,211,238,.16) 0%,transparent 60%),
+    radial-gradient(1200px 800px at 20% -10%,#241b4d 0%,var(--brand-bg) 55%,#04040c 100%);
   min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  overflow-x:hidden;
+  overflow-x:hidden;touch-action:manipulation;
 }
+/* ambient aurora blobs — pure decoration */
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:-1;pointer-events:none;opacity:.5;
+}
+body::before{width:44vmax;height:44vmax;left:-12vmax;top:-10vmax;
+  background:radial-gradient(circle,rgba(124,58,237,.5),transparent 70%);
+  animation:drift 26s ease-in-out infinite alternate}
+body::after{width:40vmax;height:40vmax;right:-10vmax;top:22vh;
+  background:radial-gradient(circle,rgba(34,211,238,.35),transparent 70%);
+  animation:drift 32s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(6vmax,4vmax) scale(1.12)}}
 .screen{display:none;width:100%;max-width:1100px;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:2vmin}
 .screen.active{display:flex}
-h1,h2{margin:0.4em 0;text-align:center}
+h1,h2{margin:0.4em 0;text-align:center;font-family:var(--display-font);letter-spacing:.01em}
 button{
-  font-family:var(--brand-font);cursor:pointer;border:none;border-radius:999px;
+  font-family:var(--display-font);cursor:pointer;border:none;border-radius:999px;
   padding:0.9em 2.2em;font-size:1.05rem;font-weight:700;color:#0a0a18;
   background:linear-gradient(135deg,var(--brand-gold),var(--brand-accent));
-  box-shadow:0 4px 24px rgba(34,211,238,.35);transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 24px rgba(34,211,238,.35);transition:transform .16s ease,box-shadow .16s ease,filter .16s;
+  position:relative;overflow:hidden;
 }
-button:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,211,238,.5)}
-button:active{transform:translateY(0)}
-button.ghost{background:transparent;color:var(--brand-accent);border:2px solid var(--brand-accent);box-shadow:none}
-button.ghost:hover{background:rgba(34,211,238,.12)}
+button::after{ /* sheen sweep */
+  content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:skewX(-20deg);transition:left .5s ease;
+}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,211,238,.5);filter:saturate(1.1)}
+button:hover::after{left:130%}
+button:active{transform:translateY(0) scale(.98)}
+button.ghost{background:rgba(34,211,238,.06);color:var(--brand-accent);border:1.5px solid rgba(34,211,238,.55);box-shadow:none}
+button.ghost:hover{background:rgba(34,211,238,.14);box-shadow:0 4px 18px rgba(34,211,238,.25)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--brand-gold);outline-offset:3px}
 .logo{border-radius:50%;box-shadow:0 0 40px rgba(124,58,237,.6)}
 a{color:var(--brand-accent)}
 
 /* ---------- open / close sequences ---------- */
-#open{position:fixed;inset:0;background:#050510;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
-#open .logo{width:min(34vmin,240px);height:auto}
-#open-title{display:flex;margin-top:3vmin;font-size:clamp(2rem,9vmin,4.5rem);font-weight:900;letter-spacing:.08em}
+#open{position:fixed;inset:0;background:radial-gradient(1000px 700px at 50% 30%,#1c1440 0%,#050510 70%);z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+#open .logo{width:min(34vmin,240px);height:auto;animation:logoin 1.1s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes logoin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+#open .logo{filter:drop-shadow(0 0 34px rgba(124,58,237,.75))}
+#open-title{display:flex;margin-top:3vmin;font-size:clamp(2rem,9vmin,4.5rem);font-weight:800;letter-spacing:.08em;
+  font-family:var(--display-font);position:relative}
 #open-title span{display:inline-block;opacity:0;transform:translateY(12vmin) rotate(40deg) scale(.3);
   animation:flyin .7s cubic-bezier(.2,1.4,.4,1) forwards;background:linear-gradient(180deg,var(--brand-gold),var(--brand-magenta));
   -webkit-background-clip:text;background-clip:text;color:transparent}
 @keyframes flyin{to{opacity:1;transform:none}}
 #open-tag{color:var(--brand-muted);margin-top:2vmin;opacity:0;animation:fadein 1s 2s forwards;font-size:clamp(.9rem,3.4vmin,1.2rem)}
-#open-skip{position:absolute;bottom:4vmin;color:var(--brand-muted);font-size:.9rem;opacity:0;animation:fadein 1s 2.5s forwards}
+#open-skip{position:absolute;bottom:4vmin;color:var(--brand-muted);font-size:.9rem;opacity:0;animation:fadein 1s 2.5s forwards;
+  border:1px solid var(--brand-line);border-radius:999px;padding:.5em 1.4em;background:rgba(23,23,46,.6)}
 @keyframes fadein{to{opacity:1}}
 #goodbye{position:fixed;inset:0;background:#050510;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4vmin}
 #goodbye .logo{width:min(24vmin,160px)}
-#goodbye-title{display:flex;font-size:clamp(1.6rem,7vmin,3.4rem);font-weight:900;margin:3vmin 0 1vmin}
+#goodbye-title{display:flex;font-size:clamp(1.6rem,7vmin,3.4rem);font-weight:800;margin:3vmin 0 1vmin;font-family:var(--display-font)}
 #goodbye-title span{display:inline-block;background:linear-gradient(180deg,var(--brand-accent),var(--brand-primary));
   -webkit-background-clip:text;background-clip:text;color:transparent;transition:all .8s}
 #goodbye.scattering #goodbye-title span{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.2)}
 
 /* ---------- setup screen ---------- */
-#setup .logo{width:min(26vmin,170px);height:auto}
-#setup h1{font-size:clamp(2rem,8vmin,3.6rem);background:linear-gradient(90deg,var(--brand-gold),var(--brand-magenta),var(--brand-accent));
+#setup .logo{width:min(26vmin,170px);height:auto;animation:logoin 1s cubic-bezier(.2,1.3,.4,1) both}
+#setup h1{font-size:clamp(2.1rem,8vmin,3.8rem);font-weight:800;background:linear-gradient(90deg,var(--brand-gold),var(--brand-magenta),var(--brand-accent));
   -webkit-background-clip:text;background-clip:text;color:transparent}
-.theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1.6vmin;width:min(94vw,720px);margin:2vmin 0}
-.theme-card{background:var(--brand-panel);border:2px solid transparent;border-radius:16px;padding:1.1em .8em;text-align:center;color:var(--brand-text);
-  font-size:1rem;box-shadow:none;transition:border-color .2s,transform .2s}
+#setup .lede{color:var(--brand-muted);text-align:center;max-width:62ch;margin:.2em 0 .4em;font-size:1.02rem}
+#setup .howto{color:var(--brand-accent);text-align:center;font-size:.92rem;margin:.2em 0 1em;letter-spacing:.02em}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1.8vmin;width:min(94vw,720px);margin:2vmin 0}
+.theme-card{
+  background:linear-gradient(var(--brand-panel-solid),var(--brand-panel-solid)) padding-box,
+    linear-gradient(135deg,rgba(124,58,237,.35),rgba(34,211,238,.25)) border-box;
+  border:2px solid transparent;border-radius:16px;padding:1.1em .8em;text-align:center;color:var(--brand-text);
+  font-size:1rem;box-shadow:0 2px 10px rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease,border-color .18s;
+}
 .theme-card small{display:block;color:var(--brand-muted);font-weight:400;margin-top:.5em;font-size:.78rem}
-.theme-card.selected{border-color:var(--brand-gold);transform:scale(1.03)}
+.theme-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift)}
+.theme-card.selected{
+  border:2px solid transparent;
+  background:linear-gradient(#221d47,#221d47) padding-box,
+    linear-gradient(135deg,var(--brand-gold),var(--brand-magenta),var(--brand-accent)) border-box;
+  transform:translateY(-3px) scale(1.03);box-shadow:0 8px 28px rgba(251,191,36,.28);
+}
+.theme-card::after{display:none}
 #custom-box{width:min(94vw,720px);margin:1vmin 0}
-#custom-words{width:100%;min-height:64px;border-radius:12px;border:1px solid #3a3a6a;background:#0e0e22;color:var(--brand-text);
-  font-family:var(--brand-font);padding:.7em;font-size:.95rem;resize:vertical}
+#custom-words{width:100%;min-height:64px;border-radius:12px;border:1px solid var(--brand-line);background:#0e0e22;color:var(--brand-text);
+  font-family:var(--brand-font);padding:.7em;font-size:.95rem;resize:vertical;transition:border-color .2s,box-shadow .2s}
+#custom-words:focus{border-color:var(--brand-accent);box-shadow:0 0 0 3px rgba(34,211,238,.18);outline:none}
 .setup-row{display:flex;gap:2vmin;margin:2vmin 0;flex-wrap:wrap;justify-content:center}
+#play-btn{font-size:1.25rem;padding:1em 2.6em}
 .cta{margin-top:2.4vmin;text-align:center}
 .cta p{color:var(--brand-muted);margin:.4em 0;font-size:.95rem}
 
 /* ---------- game screen ---------- */
 #hud{width:min(96vw,1100px);display:flex;align-items:center;gap:2vmin;flex-wrap:wrap;justify-content:space-between;
-  background:rgba(27,27,56,.85);border:1px solid #2c2c5c;border-radius:18px;padding:1.4vmin 2.4vmin;margin-bottom:1.6vmin;
-  position:sticky;top:0;z-index:20;backdrop-filter:blur(6px)}
+  background:var(--brand-panel);border:1px solid var(--brand-line);border-radius:var(--radius);
+  padding:1.4vmin 2.4vmin;margin-bottom:1.6vmin;position:sticky;top:0;z-index:20;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
 #hud .logo{width:44px;height:44px}
 .hud-stat{display:flex;flex-direction:column;align-items:center;min-width:64px}
-.hud-stat b{font-size:1.25rem;color:var(--brand-gold)}
-.hud-stat span{font-size:.7rem;color:var(--brand-muted);text-transform:uppercase;letter-spacing:.08em}
+.hud-stat b{font-size:1.3rem;color:var(--brand-gold);font-family:var(--display-font);font-variant-numeric:tabular-nums}
+.hud-stat b.hot{color:var(--brand-magenta);animation:flick 1s ease-in-out infinite}
+@keyframes flick{50%{text-shadow:0 0 14px rgba(236,72,153,.9)}}
+.hud-stat span{font-size:.68rem;color:var(--brand-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2em}
 .hud-btns{display:flex;gap:1vmin;flex-wrap:wrap}
 .hud-btns button{padding:.55em 1.1em;font-size:.9rem}
+#hud-progress{flex:1 1 100%;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.4vmin}
+#hud-progress-fill{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--brand-primary),var(--brand-accent),var(--brand-lime));
+  transition:width .5s cubic-bezier(.2,1,.3,1);box-shadow:0 0 10px rgba(34,211,238,.7)}
 #layout{width:min(96vw,1100px);display:flex;gap:2.4vmin;align-items:flex-start;justify-content:center;flex-wrap:wrap}
 #board-wrap{position:relative;flex:0 1 auto}
-#board{position:relative;display:grid;gap:0;background:rgba(10,10,30,.7);border:2px solid #2c2c5c;border-radius:14px;
-  padding:1vmin;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+#board{position:relative;display:grid;gap:0;background:rgba(8,8,24,.82);border:2px solid var(--brand-line);border-radius:16px;
+  padding:1vmin;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:crosshair;
+  box-shadow:0 12px 44px rgba(0,0,0,.5),inset 0 0 60px rgba(124,58,237,.08)}
 .cell{
   width:var(--cell,7vmin);height:var(--cell,7vmin);display:flex;align-items:center;justify-content:center;
-  font-size:calc(var(--cell,7vmin)*.5);font-weight:800;color:var(--brand-text);border-radius:22%;
-  transition:transform .12s,background .12s,color .12s;position:relative;z-index:2}
-.cell.dragging{background:rgba(124,58,237,.55);color:#fff;transform:scale(1.22);box-shadow:0 0 12px rgba(124,58,237,.9)}
-.cell.found{color:#0a0a18}
+  font-size:calc(var(--cell,7vmin)*.52);font-weight:800;font-family:var(--display-font);color:var(--brand-text);
+  border-radius:24%;transition:transform .12s ease,background .12s ease,color .12s ease,box-shadow .12s ease;
+  position:relative;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.cell.dragging{background:linear-gradient(135deg,rgba(124,58,237,.75),rgba(34,211,238,.55));color:#fff;
+  transform:scale(1.24);box-shadow:0 0 16px rgba(124,58,237,.95);z-index:3}
+.cell.found{color:#0a0a18;text-shadow:none}
+.cell.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{35%{transform:scale(1.45) rotate(-6deg)}70%{transform:scale(.94)}}
 .cell.hint-flash{animation:hintflash .5s 4}
 @keyframes hintflash{50%{background:var(--brand-gold);color:#0a0a18;transform:scale(1.3)}}
+/* live drag ribbon — follows the finger so the path visibly links */
+#drag-ribbon{position:absolute;height:calc(var(--cell,7vmin)*.62);border-radius:999px;z-index:1;pointer-events:none;
+  display:none;transform-origin:left center;opacity:.85;
+  background:linear-gradient(90deg,var(--brand-primary),var(--brand-accent));
+  box-shadow:0 0 18px rgba(124,58,237,.9),0 0 34px rgba(34,211,238,.5)}
 .word-stroke{position:absolute;height:calc(var(--cell,7vmin)*.78);border-radius:999px;z-index:1;pointer-events:none;
-  transform-origin:left center;opacity:.92;animation:drawin .45s ease-out;box-shadow:0 0 14px currentColor}
-@keyframes drawin{from{transform:scaleX(0)}}
+  transform-origin:left center;opacity:.94;animation:drawin .45s ease-out;box-shadow:0 0 14px currentColor}
+@keyframes drawin{from{transform:scaleX(0) rotate(var(--stroke-ang,0deg))}}
+.spark{position:absolute;width:9px;height:9px;border-radius:50%;z-index:4;pointer-events:none;
+  transform:translate(-50%,-50%);box-shadow:0 0 10px currentColor;
+  animation:sparkfly .7s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes sparkfly{to{transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) scale(0);opacity:0}}
 #board.shake{animation:shake .4s}
 @keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-#bank{background:rgba(27,27,56,.85);border:1px solid #2c2c5c;border-radius:18px;padding:2vmin;min-width:180px;max-width:300px}
-#bank h3{margin:.2em 0 .8em;color:var(--brand-accent);font-size:1rem;text-transform:uppercase;letter-spacing:.1em}
+#bank{background:var(--brand-panel);border:1px solid var(--brand-line);border-radius:var(--radius);
+  padding:2.2vmin;min-width:190px;max-width:300px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 6px 24px rgba(0,0,0,.35)}
+#bank h3{margin:.2em 0 .9em;color:var(--brand-accent);font-size:.95rem;text-transform:uppercase;letter-spacing:.14em;font-family:var(--display-font)}
 #bank ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.55em}
-#bank li{font-weight:700;letter-spacing:.06em;font-size:1.02rem;padding:.3em .6em;border-radius:8px;transition:all .4s}
-#bank li.found{text-decoration:line-through;opacity:.35;transform:scale(.96)}
+#bank li{font-weight:700;letter-spacing:.06em;font-size:1.02rem;padding:.34em .7em;border-radius:10px;transition:all .35s ease;
+  background:rgba(255,255,255,.04);border:1px solid transparent}
+#bank li.found{text-decoration:line-through;opacity:.4;transform:scale(.96);background:transparent}
+#bank li.found::before{content:"✓ ";color:var(--brand-lime);text-decoration:none}
 #bank li .pulse{display:inline-block}
 #bank li.found .pulse{animation:pulse .6s}
 @keyframes pulse{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
 
 /* ---------- win screen / dialogs ---------- */
 #win{text-align:center}
-#win .logo{width:min(22vmin,140px)}
-#summary{background:var(--brand-panel);border:1px solid #2c2c5c;border-radius:18px;padding:3vmin 5vmin;margin:2vmin 0;display:grid;gap:.6em;min-width:min(88vw,380px)}
-#summary .row{display:flex;justify-content:space-between;gap:4vmin;font-size:1.05rem}
-#summary .row b{color:var(--brand-gold)}
-#summary .newbest{color:var(--brand-lime);font-weight:900;animation:pulse 1s infinite}
-dialog{border:1px solid #3a3a6a;border-radius:18px;background:var(--brand-panel);color:var(--brand-text);padding:4vmin;max-width:min(92vw,440px);text-align:center}
-dialog::backdrop{background:rgba(5,5,16,.75)}
+#win .logo{width:min(22vmin,140px);animation:logoin .9s cubic-bezier(.2,1.3,.4,1) both}
+#win h1{font-size:clamp(1.9rem,7vmin,3.2rem);animation:trophy .8s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes trophy{from{opacity:0;transform:scale(.5) rotate(-8deg)}to{opacity:1;transform:none}}
+#summary{background:var(--brand-panel);border:1px solid var(--brand-line);border-radius:var(--radius);
+  padding:3vmin 5vmin;margin:2vmin 0;display:grid;gap:.7em;min-width:min(88vw,380px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 34px rgba(0,0,0,.4)}
+#summary .row{display:flex;justify-content:space-between;gap:4vmin;font-size:1.05rem;
+  opacity:0;animation:rowin .5s ease forwards}
+#summary .row:nth-child(2){animation-delay:.08s}#summary .row:nth-child(3){animation-delay:.16s}
+#summary .row:nth-child(4){animation-delay:.24s}#summary .row:nth-child(5){animation-delay:.32s}
+@keyframes rowin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#summary .row b{color:var(--brand-gold);font-family:var(--display-font);font-variant-numeric:tabular-nums}
+#summary .newbest{color:var(--brand-lime);font-weight:800;font-family:var(--display-font);animation:pulse 1s infinite}
+dialog{border:1px solid var(--brand-line);border-radius:20px;background:var(--brand-panel-solid);color:var(--brand-text);
+  padding:4vmin;max-width:min(92vw,440px);text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(5,5,16,.78);backdrop-filter:blur(3px)}
+dialog h2{font-size:1.35rem}
 dialog .stream-btns{display:flex;gap:2vmin;justify-content:center;margin:2.5vmin 0;flex-wrap:wrap}
 dialog .stream-btns a{text-decoration:none}
-#toast{position:fixed;bottom:6vmin;left:50%;transform:translateX(-50%);background:#241b4d;border:1px solid var(--brand-accent);
-  color:var(--brand-text);padding:.8em 1.6em;border-radius:999px;opacity:0;transition:opacity .3s;z-index:200;pointer-events:none;font-weight:600}
-#toast.show{opacity:1}
+#toast{position:fixed;bottom:6vmin;left:50%;transform:translateX(-50%) translateY(12px) scale(.94);
+  background:linear-gradient(135deg,#2a2156,#1a2f52);border:1px solid var(--brand-accent);
+  color:var(--brand-text);padding:.85em 1.7em;border-radius:999px;opacity:0;transition:opacity .28s ease,transform .28s ease;
+  z-index:200;pointer-events:none;font-weight:600;box-shadow:0 8px 28px rgba(34,211,238,.3);font-family:var(--display-font)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 footer{width:100%;text-align:center;color:var(--brand-muted);font-size:.8rem;padding:2vmin;margin-top:auto}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
 
 @media (max-width:760px){
   #layout{flex-direction:column;align-items:center}
   #bank{max-width:min(96vw,560px);width:100%}
-  #bank ul{flex-direction:row;flex-wrap:wrap;gap:.4em}
-  #bank li{font-size:.9rem}
+  #bank ul{flex-direction:row;flex-wrap:wrap;gap:.45em}
+  #bank li{font-size:.88rem;padding:.3em .65em}
   #hud{justify-content:center}
+  .hud-stat{min-width:56px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  body::before,body::after{display:none}
+  #drag-ribbon{transition:none}
 }
+
 </style>
 </head>
 <body>
@@ -169,7 +260,8 @@ footer{width:100%;text-align:center;color:var(--brand-muted);font-size:.8rem;pad
 <main id="setup" class="screen">
   <img class="logo" id="setup-logo" alt="Cumulative Web Inc logo">
   <h1>Word Signal™</h1>
-  <p style="color:var(--brand-muted);text-align:center;max-width:60ch">A word-search game built on That Boy Hi Hat's catalog. Pick a theme, hunt the hidden words, beat your best score.</p>
+  <p class="lede">A word-search game built on That Boy Hi Hat's catalog. Pick a theme, hunt the hidden words, beat your best score.</p>
+  <p class="howto">Drag across letters &mdash; horizontally, vertically, or diagonally &mdash; then release to lock in the word.</p>
   <div class="theme-grid" id="theme-grid" role="radiogroup" aria-label="Choose a theme"></div>
   <div id="custom-box">
     <label for="custom-words" style="color:var(--brand-muted);font-size:.9rem">…or paste your own word list (JSON array or comma/newline separated, letters A–Z, 3+ letters):</label>
@@ -197,6 +289,7 @@ footer{width:100%;text-align:center;color:var(--brand-muted);font-size:.8rem;pad
       <button id="listen-btn" class="ghost" title="Hear the music">🎧</button>
       <button id="save-exit-btn" class="ghost">Save &amp; Exit</button>
     </div>
+    <div id="hud-progress" aria-hidden="true"><i id="hud-progress-fill"></i></div>
   </div>
   <div id="layout">
     <div id="board-wrap"><div id="board" aria-label="Word search grid"></div></div>
@@ -411,7 +504,7 @@ const reduceMotion = (typeof window !== "undefined" && window.matchMedia)
 const Game = {
   themeId:null, themeTitle:"", words:[], grid:null, placements:[],
   found:[], score:0, streak:0, elapsed:0, timerId:null, autosaveId:null,
-  dragging:false, dragStart:null, dragCells:[], colors:[]
+  colors:[]
 };
 
 function setCellVmin(){
@@ -423,6 +516,11 @@ function setCellVmin(){
 function renderBoard(){
   const board = $("board");
   board.innerHTML = "";
+  // a fresh board clears old found-word strokes and hides the live ribbon
+  const wrap = $("board-wrap");
+  const olds = wrap.querySelectorAll(".word-stroke");
+  for(let i=0;i<olds.length;i++) olds[i].parentElement.removeChild(olds[i]);
+  hideRibbon();
   board.style.gridTemplateColumns = "repeat(" + CONFIG.gridSize + ", var(--cell,7vmin))";
   const g = Game.grid.letters;
   for(let r=0;r<CONFIG.gridSize;r++) for(let c=0;c<CONFIG.gridSize;c++){
@@ -447,78 +545,137 @@ function renderBank(){
 }
 
 function updateHUD(){
-  $("hud-score").textContent = Game.score;
+  animateScore(Game.score);
   $("hud-found").textContent = Game.found.length + "/" + Game.words.length;
   $("hud-time").textContent = formatTime(Game.elapsed);
-  $("hud-streak").textContent = "×" + Game.streak;
+  const st = $("hud-streak");
+  st.textContent = "×" + Game.streak + (Game.streak >= 2 ? " 🔥" : "");
+  st.classList.toggle("hot", Game.streak >= 2);
+  const prog = $("hud-progress-fill");
+  if(prog) prog.style.width = (Game.words.length ? (Game.found.length/Game.words.length*100) : 0) + "%";
 }
 
-/* Draw the colored rounded-capsule highlight stroke behind a found word. */
-function drawStroke(p, colorIdx){
+/* Shared stroke geometry: pixel rect for a capsule from cell (r1,c1) to (r2,c2),
+   in #board-wrap coordinates. Used by found-word strokes and the live ribbon. */
+function strokeGeom(r1, c1, r2, c2){
   const board = $("board");
-  const first = p.cells[0], last = p.cells[p.cells.length-1];
-  const a = cellEl(first[0], first[1]), b = cellEl(last[0], last[1]);
-  const wrap = $("board-wrap");
+  const a = cellEl(r1, c1), b = cellEl(r2, c2);
   const br = board.getBoundingClientRect(), ar = a.getBoundingClientRect(), br2 = b.getBoundingClientRect();
   const cx = function(r){ return r.left + r.width/2 - br.left; };
   const cy = function(r){ return r.top + r.height/2 - br.top; };
   const x1 = cx(ar), y1 = cy(ar), x2 = cx(br2), y2 = cy(br2);
   const dx = x2-x1, dy = y2-y1;
-  const len = Math.sqrt(dx*dx+dy*dy) + ar.width*0.9;
-  const ang = Math.atan2(dy,dx)*180/Math.PI;
+  return { x1:x1, y1:y1,
+           len:Math.sqrt(dx*dx+dy*dy) + ar.width*0.9,
+           ang:Math.atan2(dy,dx)*180/Math.PI, w:ar.width, h:ar.height };
+}
+
+/* Draw the colored rounded-capsule highlight stroke behind a found word.
+   Returns the stroke color (for sparkles). `instant` skips the draw-in
+   animation (used when redrawing after resize). */
+function drawStroke(p, colorIdx, instant){
+  const first = p.cells[0], last = p.cells[p.cells.length-1];
+  const g = strokeGeom(first[0], first[1], last[0], last[1]);
   const stroke = document.createElement("div");
   stroke.className = "word-stroke";
   const palette = getComputedStyle(document.documentElement).getPropertyValue("--word-colors").split(",");
   const col = (palette[colorIdx % palette.length] || "#fbbf24").trim();
   stroke.style.background = col; stroke.style.color = col;
-  stroke.style.width = len + "px";
-  stroke.style.left = (x1 - ar.width*0.45) + "px";
-  stroke.style.top = (y1 - ar.height*0.39) + "px";
-  stroke.style.transform = "rotate(" + ang + "deg)";
-  stroke.style.animation = reduceMotion ? "none" : "";
+  stroke.style.width = g.len + "px";
+  stroke.style.left = (g.x1 - g.w*0.45) + "px";
+  stroke.style.top = (g.y1 - g.h*0.39) + "px";
+  stroke.style.transform = "rotate(" + g.ang + "deg)";
+  stroke.style.setProperty("--stroke-ang", g.ang + "deg");
+  stroke.style.animation = (reduceMotion || instant) ? "none" : "";
   // keep cells above the stroke; stroke lives behind letters (z-index 1 < cell z 2)
-  wrap.appendChild(stroke);
+  $("board-wrap").appendChild(stroke);
   for(const cell of p.cells){
     const el = cellEl(cell[0], cell[1]);
     el.classList.add("found"); el.style.color = "#0a0a18"; el.style.fontWeight = "900";
   }
+  return col;
+}
+
+/* Re-align found-word strokes after resize/rotation (they are px-positioned). */
+function redrawStrokes(){
+  const wrap = $("board-wrap");
+  const olds = wrap.querySelectorAll(".word-stroke");
+  for(let i=0;i<olds.length;i++) olds[i].parentElement.removeChild(olds[i]);
+  Game.placements.forEach(function(p){
+    if(Game.found.indexOf(p.word) !== -1) drawStroke(p, Game.words.indexOf(p.word), true);
+  });
+  hideRibbon();
 }
 
 function cellEl(r,c){
   return $("board").children[r*CONFIG.gridSize + c];
 }
 
-/* ---------- drag selection: touch AND mouse via Pointer Events ---------- */
+/* ---------- drag selection: Pointer Events, one gesture at a time ----------
+   2026-09-23 rework — root-cause fixes for Black's "controls are glitching,
+   puzzle sequences are not linking" report:
+   1. dragStart is stored as {r,c} COORDINATES (was: the DOM element), so
+      lineCells() no longer computes NaN and empties the selection on the
+      first pointermove. This was the primary defect: every drag died at
+      touchdown and nothing the finger drew ever linked into a word.
+   2. activePointerId: a second pointerdown mid-gesture (second finger, Apple
+      Pencil palm, stray compatibility mouse event) is IGNORED instead of
+      clobbering the live drag's anchor.
+   3. pointerup/pointercancel are matched by pointerId; window-level safety-net
+      listeners plus blur plus lostpointercapture close the gesture even when
+      setPointerCapture fails (older iOS Safari) and the pointer lifts
+      off-board — no more stuck "phantom drag" state.
+   4. Change-detected painting: only cells whose highlight state flips are
+      touched per pointermove (was: full 144-cell class churn per event).
+   5. A live ribbon stroke follows the drag so the path visibly links.
+   6. contextmenu suppressed on the board: iOS long-press no longer pops the
+      system callout mid-drag. */
+const Sel = { activeId:null, start:null, cells:[], lastKey:"" };
+
 function bindSelection(){
   const board = $("board");
+  board.addEventListener("contextmenu", function(e){ e.preventDefault(); });
   board.addEventListener("pointerdown", function(e){
+    if(e.pointerType === "mouse" && e.button !== 0) return;  // left button only
+    if(Sel.activeId !== null) return;                         // gesture in flight: ignore
     const t = cellFromEvent(e); if(!t) return;
-    e.preventDefault();
-    Game.dragging = true; Game.dragStart = t; Game.dragCells = [t];
-    t.classList.add("dragging");
+    try{ if(e.cancelable !== false) e.preventDefault(); }catch(err){}
+    Sel.activeId = e.pointerId;
+    Sel.start = { r:+t.dataset.r, c:+t.dataset.c };           // coordinates, NOT the element
+    Sel.cells = [Sel.start];
+    Sel.lastKey = Sel.start.r + "," + Sel.start.c;
+    paintDrag();
     try{ board.setPointerCapture(e.pointerId); }catch(err){}
   });
   board.addEventListener("pointermove", function(e){
-    if(!Game.dragging) return;
-    const t = cellFromEvent(e);
-    if(!t) return;
-    const cells = lineCells(Game.dragStart, {r:+t.dataset.r, c:+t.dataset.c});
-    clearDrag();
-    Game.dragCells = cells;
-    for(const cl of cells){
-      const el = cellEl(cl.r, cl.c);
-      if(el){ el.classList.add("dragging"); }
-    }
+    if(Sel.activeId === null || e.pointerId !== Sel.activeId) return;
+    const t = cellFromEvent(e); if(!t) return;                 // keep last good position off-board
+    const cells = lineCells(Sel.start, { r:+t.dataset.r, c:+t.dataset.c });
+    const key = cells.map(function(cl){ return cl.r + "," + cl.c; }).join(";");
+    if(key === Sel.lastKey) return;                           // unchanged: skip DOM churn
+    Sel.lastKey = key; Sel.cells = cells;
+    paintDrag();
   });
-  const end = function(){
-    if(!Game.dragging) return;
-    Game.dragging = false;
-    const cells = Game.dragCells.slice();
+  function finish(e, cancelled){
+    if(Sel.activeId === null) return;
+    if(e && e.pointerId !== undefined && e.pointerId !== Sel.activeId) return;
+    const pid = Sel.activeId, cells = Sel.cells.slice();
+    Sel.activeId = null; Sel.start = null; Sel.cells = []; Sel.lastKey = "";
+    try{ if(board.hasPointerCapture && board.hasPointerCapture(pid)) board.releasePointerCapture(pid); }catch(err){}
     clearDrag();
-    submitSelection(cells);
-  };
-  board.addEventListener("pointerup", end);
-  board.addEventListener("pointercancel", function(){ Game.dragging=false; clearDrag(); });
+    if(!cancelled) submitSelection(cells);
+  }
+  function onUp(e){ finish(e, false); }
+  function onCancel(e){ finish(e, true); }
+  board.addEventListener("pointerup", onUp);
+  board.addEventListener("pointercancel", onCancel);
+  board.addEventListener("lostpointercapture", function(e){
+    if(Sel.activeId !== null && e.pointerId === Sel.activeId) finish(e, true);
+  });
+  // safety net: pointer released off-board when capture failed (older iOS)
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onCancel);
+  window.addEventListener("blur", function(){ finish(null, true); });
 }
 function cellFromEvent(e){
   let el = document.elementFromPoint(e.clientX, e.clientY);
@@ -526,9 +683,89 @@ function cellFromEvent(e){
   if(el && el.dataset && el.dataset.r !== undefined) return el;
   return null;
 }
+/* Paint the current drag: diff against existing highlight, touch only flips. */
+function paintDrag(){
+  const board = $("board");
+  const want = {};
+  for(const cl of Sel.cells) want[cl.r + "," + cl.c] = true;
+  const kids = board.children;
+  for(let i=0;i<kids.length;i++){
+    const el = kids[i];
+    const on = !!want[el.dataset.r + "," + el.dataset.c];
+    const has = el.classList.contains("dragging");
+    if(on && !has) el.classList.add("dragging");
+    else if(!on && has) el.classList.remove("dragging");
+  }
+  paintRibbon();
+}
 function clearDrag(){
   const cells = $("board").querySelectorAll(".cell.dragging");
-  cells.forEach(function(el){ el.classList.remove("dragging"); });
+  for(let i=0;i<cells.length;i++) cells[i].classList.remove("dragging");
+  hideRibbon();
+}
+
+/* ---------- live drag ribbon: the visible "link" under the finger ---------- */
+let ribbonEl = null;
+function ensureRibbon(){
+  if(!ribbonEl || !ribbonEl.parentElement){
+    ribbonEl = document.createElement("div");
+    ribbonEl.id = "drag-ribbon";
+    $("board-wrap").appendChild(ribbonEl);
+  }
+  return ribbonEl;
+}
+function hideRibbon(){ if(ribbonEl && ribbonEl.parentElement) ribbonEl.style.display = "none"; }
+function paintRibbon(){
+  const ribbon = ensureRibbon();
+  const cells = Sel.cells;
+  if(!cells || cells.length === 0){ ribbon.style.display = "none"; return; }
+  const a = cells[0], b = cells[cells.length-1];
+  const g = strokeGeom(a.r, a.c, b.r, b.c);
+  ribbon.style.display = "block";
+  ribbon.style.width = g.len + "px";
+  ribbon.style.left = (g.x1 - g.w*0.45) + "px";
+  ribbon.style.top = (g.y1 - g.h*0.39) + "px";
+  ribbon.style.transform = "rotate(" + g.ang + "deg)";
+}
+
+/* ---------- feel helpers ---------- */
+function buzz(ms){
+  try{ if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(ms); }catch(e){}
+}
+let scoreAnimId = 0;
+function animateScore(to){
+  const el = $("hud-score");
+  const from = parseInt(el.textContent, 10);
+  const fromV = isNaN(from) ? 0 : from;
+  if(reduceMotion || typeof requestAnimationFrame === "undefined" ||
+     typeof performance === "undefined" || fromV === to){
+    el.textContent = String(to); return;
+  }
+  if(scoreAnimId) cancelAnimationFrame(scoreAnimId);
+  const t0 = performance.now(), dur = 450;
+  function tick(t){
+    const k = Math.min(1, (t - t0)/dur), ez = 1 - Math.pow(1-k, 3);
+    el.textContent = String(Math.round(fromV + (to - fromV)*ez));
+    scoreAnimId = (k < 1) ? requestAnimationFrame(tick) : 0;
+  }
+  scoreAnimId = requestAnimationFrame(tick);
+}
+/* Sparkle burst at a cell — word-found celebration. */
+function sparkleAt(r, c, color){
+  if(reduceMotion) return;
+  const wrap = $("board-wrap");
+  const g = strokeGeom(r, c, r, c);
+  for(let i=0;i<3;i++){
+    const s = document.createElement("span");
+    s.className = "spark";
+    s.style.background = color; s.style.color = color;
+    s.style.left = g.x1 + "px"; s.style.top = g.y1 + "px";
+    s.style.setProperty("--sx", ((Math.random()*64-32)|0) + "px");
+    s.style.setProperty("--sy", ((Math.random()*64-32)|0) + "px");
+    s.style.animationDelay = (i*0.06) + "s";
+    wrap.appendChild(s);
+    (function(node){ setTimeout(function(){ if(node.parentElement) node.parentElement.removeChild(node); }, 950); })(s);
+  }
 }
 
 /* ---------- submit: correct → stroke + bank fade + sparkle; wrong → shake ---------- */
@@ -540,7 +777,22 @@ function submitSelection(cells){
     const pts = scoreForFind(p.word.length, Game.streak);
     Game.score += pts;
     const colorIdx = Game.words.indexOf(p.word);
-    drawStroke(p, colorIdx);
+    const strokeColor = drawStroke(p, colorIdx);
+    buzz(25);
+    if(!reduceMotion){
+      p.cells.forEach(function(cell, i){
+        const el = cellEl(cell[0], cell[1]);
+        setTimeout(function(){
+          el.classList.add("pop");
+          setTimeout(function(){ el.classList.remove("pop"); }, 480);
+        }, i*45);
+      });
+      const mid = p.cells[Math.floor(p.cells.length/2)];
+      const lastC = p.cells[p.cells.length-1];
+      sparkleAt(p.cells[0][0], p.cells[0][1], strokeColor);
+      sparkleAt(mid[0], mid[1], strokeColor);
+      sparkleAt(lastC[0], lastC[1], strokeColor);
+    }
     const li = $("bank-list").querySelector('[data-word="'+p.word+'"]');
     if(li) li.classList.add("found");
     toast("+" + pts + "  " + p.word + (Game.streak > 1 ? "  · streak ×" + Game.streak : ""));
@@ -768,13 +1020,15 @@ function goFullscreen(){
 let selectedTheme = null, selectionBound = false;
 function bindSelectionOnce(){ if(!selectionBound){ bindSelection(); selectionBound = true; } }
 
-function buildThemeCards(){
+function buildThemeCards(preselectId){
   const grid = $("theme-grid"); grid.innerHTML = "";
   const all = THEMES.concat(CUSTOM_THEMES);
   all.forEach(function(t, i){
     const b = document.createElement("button");
-    b.type = "button"; b.className = "theme-card" + (i === 0 ? " selected" : "");
-    b.setAttribute("role","radio"); b.setAttribute("aria-checked", i === 0 ? "true" : "false");
+    b.type = "button";
+    const isSel = preselectId ? (t.id === preselectId) : (i === 0);
+    b.className = "theme-card" + (isSel ? " selected" : "");
+    b.setAttribute("role","radio"); b.setAttribute("aria-checked", isSel ? "true" : "false");
     const label = document.createElement("div"); label.textContent = t.title;
     const sub = document.createElement("small"); sub.textContent = t.words.length + " words · " + CONFIG.wordsPerGame + " hidden";
     b.appendChild(label); b.appendChild(sub);
@@ -785,8 +1039,25 @@ function buildThemeCards(){
       $("custom-words").value = "";
     });
     grid.appendChild(b);
-    if(i === 0) selectedTheme = t;
+    if(isSel) selectedTheme = t;
   });
+}
+
+/* Deep-linkable states for playtesting / sharing (no login, no backend):
+   ?theme=<id>        preselect a theme (zooted|doves|futurism|diabolique|catalog)
+   ?difficulty=easy|normal|hard   6 / 8 / 10 hidden words (default 8)
+   ?new=1             ignore any saved game and start fresh
+   ?autostart=1       skip setup and start playing immediately
+   ?skipintro=1       skip the animated intro */
+function readDeepLinks(){
+  const q = {};
+  try{
+    const sp = new URLSearchParams((window.location && window.location.search) || "");
+    ["theme","difficulty","new","autostart","skipintro"].forEach(function(k){
+      const v = sp.get(k); if(v !== null && v !== "") q[k] = v;
+    });
+  }catch(e){}
+  return q;
 }
 
 function boot(){
@@ -794,7 +1065,11 @@ function boot(){
   ["open-logo","setup-logo","hud-logo","win-logo","goodbye-logo"].forEach(function(id){
     const img = $(id); if(img) img.src = BRAND.logoDataUri;
   });
-  buildThemeCards();
+  const dl = readDeepLinks();
+  if(dl.difficulty === "easy") CONFIG.wordsPerGame = 6;
+  else if(dl.difficulty === "hard") CONFIG.wordsPerGame = 10;
+  if(dl["new"] === "1") clearSave();
+  buildThemeCards(dl.theme || null);
   if(hasSave()) $("resume-btn").style.display = "";
   $("play-btn").addEventListener("click", function(){
     const custom = parseCustomWords($("custom-words").value);
@@ -831,8 +1106,15 @@ function boot(){
     const t = selectedTheme || THEMES[0];
     startGame(t.id, t.title, t.words);
   });
-  window.addEventListener("resize", function(){ if($("game").classList.contains("active")) setCellVmin(); });
-  playOpen();
+  window.addEventListener("resize", function(){
+    if($("game").classList.contains("active")){ setCellVmin(); redrawStrokes(); }
+  });
+  if(dl.skipintro === "1" || dl.autostart === "1"){ $("open").style.display = "none"; showScreen("setup"); }
+  else playOpen();
+  if(dl.autostart === "1"){
+    const t = selectedTheme || THEMES[0];
+    startGame(t.id, t.title, t.words);
+  }
 }
 
 if(typeof document !== "undefined"){
