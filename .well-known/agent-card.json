@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "agent_card_version": "1.0",
+  "name": "Word Signal™",
+  "url": "https://cumulativewebinc.github.io/cwi-word-signal/",
+  "provider": {
+    "name": "Cumulative Web Inc",
+    "url": "https://cumulativeweb.com",
+    "contact": "hp@cumulativeweb.com"
+  },
+  "description": "A lyric-powered word search game from Cumulative Web Inc — hunt words drawn from That Boy Hi Hat's real catalog (Zooted Zone, Doves & Diamonds, Diabolique) across themed 12×12 grids, with combos, hints, save/resume, and a listen dialog that streams the music behind the words.",
+  "data_truth": "LIVE — self-contained game; no backend, no telemetry",
+  "content_index": "https://cumulativewebinc.github.io/cwi-word-signal/content.json",
+  "try_links": [
+    {
+      "label": "Play Word Signal™ free",
+      "url": "https://cumulativewebinc.github.io/cwi-word-signal/"
+    },
+    {
+      "label": "Explore the full catalog (listening room)",
+      "url": "https://cumulativewebinc.github.io/cwi-listening-room/"
+    }
+  ],
+  "theme_tracks": [
+    "Zooted Zone",
+    "Doves & Diamonds",
+    "Diabolique"
+  ],
+  "license": "Proprietary — © 2026 Cumulative Web Inc, all rights reserved. Contact hp@cumulativeweb.com for licensing."
+}

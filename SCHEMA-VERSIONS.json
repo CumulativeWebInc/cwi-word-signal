@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "note": "CWI contract registry for this repo",
+  "registry": {
+    ".well-known/agent-card.json": "1.0",
+    "content.json": "cwi.content-index/1.0"
+  }
+}
