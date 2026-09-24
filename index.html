@@ -46,10 +46,12 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
+html{overscroll-behavior:none}              /* no rubber-band scroll chaining */
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:var(--font-body);
   touch-action:manipulation;           /* no double-tap zoom */
+  overscroll-behavior:none;
   overflow-x:hidden;
   -webkit-user-select:none;user-select:none;
   -webkit-touch-callout:none;
@@ -121,6 +123,7 @@ body{
   aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
   font-family:var(--font-display);font-weight:700;font-size:var(--t-cell);
   color:var(--ink);border-radius:10px;position:relative;z-index:2;
+  touch-action:none; /* the target itself refuses scroll (webview-safe) */
   transition:transform .12s ease, color .12s ease, background .12s ease;
 }
 .cell.lit{color:var(--accent-ink);transform:scale(1.12)}
@@ -135,6 +138,15 @@ body{
   transition:opacity .12s ease;
 }
 #ribbon.on{opacity:1}
+/* finger trail — cyan polyline that follows the finger's ACTUAL motion while
+   the snapped lime ribbon shows the submitted word path. Answers Black's
+   "highlighting the motion would be helpful": the player sees their own
+   gesture painted in real time, even when it wiggles off the straight line. */
+#trail{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  transition:opacity .3s ease;}
+#trail.on{opacity:1}
+#trailLine{fill:none;stroke:#3ee6ff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 9px rgba(62,230,255,.85));}
 /* found-word strokes */
 .stroke{
   position:absolute;z-index:1;pointer-events:none;border-radius:999px;
@@ -270,6 +282,7 @@ footer{text-align:center;color:var(--ink-faint);font-size:var(--t-small);padding
     <div class="board-wrap glass">
       <div id="board" role="grid" aria-label="Word search grid"></div>
       <div id="ribbon" aria-hidden="true"></div>
+      <svg id="trail" aria-hidden="true"><polyline id="trailLine" points=""/></svg>
       <div id="strokeLayer" aria-hidden="true"></div>
     </div>
     <aside class="bank glass">
@@ -835,6 +848,38 @@ function addStroke(p) {
   }
 }
 
+/* finger trail — paints the finger's ACTUAL motion (client coords) as a cyan
+   polyline over the board, independent of the snapped ribbon. Token-guarded
+   fade so a fast re-drag never clears the new trail. */
+const trailEl = $('trail'), trailLine = $('trailLine');
+let trailPts = [], trailToken = 0;
+function trailWrapPos(clientX, clientY) {
+  const r = boardEl.parentElement.getBoundingClientRect();
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+function trailRender() {
+  trailLine.setAttribute('points', trailPts.map((p) => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' '));
+}
+function trailStart(clientX, clientY) {
+  trailToken++;
+  trailPts = [trailWrapPos(clientX, clientY)];
+  trailRender();
+  trailEl.classList.add('on');
+}
+function trailAdd(clientX, clientY) {
+  const p = trailWrapPos(clientX, clientY);
+  const last = trailPts[trailPts.length - 1];
+  if (last && Math.hypot(p.x - last.x, p.y - last.y) < 10) return; /* distance throttle */
+  trailPts.push(p);
+  if (trailPts.length > 400) trailPts.shift();
+  trailRender();
+}
+function trailEnd() {
+  const tok = ++trailToken;
+  trailEl.classList.remove('on');
+  setTimeout(() => { if (tok === trailToken) { trailPts = []; trailRender(); } }, 350);
+}
+
 /* the gesture — wired to Pointer Events, single activePointerId */
 const gesture = WS.newGesture({
   get size() { return S.size; },
@@ -848,20 +893,31 @@ const gesture = WS.newGesture({
 boardEl.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   if (!S.running || S.won) return;
-  gesture.down({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+  if (gesture.down({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY })) {
+    trailStart(e.clientX, e.clientY);
+  }
 });
 window.addEventListener('pointermove', (e) => {
-  gesture.move({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+  if (gesture.move({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY })) {
+    trailAdd(e.clientX, e.clientY);
+  }
 }, { passive: true });
+/* iOS-proof scroll lock: while a selection gesture owns the pointer, kill any
+   scroll the webview tries to start — non-passive so preventDefault works. */
+document.addEventListener('touchmove', (e) => {
+  if (gesture.isActive()) e.preventDefault();
+}, { passive: false });
 window.addEventListener('pointerup', (e) => {
   gesture.up({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+  trailEnd();
 });
 window.addEventListener('pointercancel', (e) => {
   gesture.cancel({ pointerId: e.pointerId });
+  trailEnd();
 });
-window.addEventListener('blur', () => gesture.cancel(null));   // safety net
+window.addEventListener('blur', () => { gesture.cancel(null); trailEnd(); });   // safety net
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { gesture.cancel(null); pauseTimer(); }
+  if (document.hidden) { gesture.cancel(null); trailEnd(); pauseTimer(); }
   else if (S.running && !S.won) startTimer();
 });
 

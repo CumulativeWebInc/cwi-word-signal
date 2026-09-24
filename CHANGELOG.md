@@ -1,3 +1,9 @@
+## Word Signal — 2026-09-24: finger trail + scroll lock
+- Black's iPhone report: the screen tried to scroll during letter selection, and the drag motion needed visible highlighting.
+- Added a cyan finger trail: an SVG polyline that paints the finger's ACTUAL motion in real time, independent of the snapped lime selection ribbon. Starts only when the gesture takes the pointer, distance-throttled, token-guarded fade after release.
+- Scroll lock: non-passive touchmove preventDefault while a selection gesture is active (iOS-proof), touch-action:none on cells as well as the board, overscroll-behavior:none to kill rubber-banding.
+- 391/391 node tests pass (372 core + 19 new trail/scroll-lock structural tests). Real-touch CDP at 390x844: mid-drag trail painted 19 points with ribbon on, scrollY stayed 0, trail faded and cleared after release.
+
 ## 2.0.0 — 2026-09-24 — Full rebuild per Black's iPhone defect order
 - Rebuilt from scratch: new coordinate-math selection engine (live ribbon, diff-based painting, single-pointer gesture ownership) — drag-select now precise and responsive on touch
 - 2026 design language: aurora background, glassmorphism, Sora/Inter, wave + confetti animations
