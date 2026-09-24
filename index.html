@@ -147,10 +147,13 @@ body{
 #trail.on{opacity:1}
 #trailLine{fill:none;stroke:#3ee6ff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 9px rgba(62,230,255,.85));}
-/* found-word strokes */
+/* found-word strokes — rotation lives in --ang so the draw-in keyframes can
+   preserve it (the old scaleX-only keyframes overrode rotate() and flashed
+   every non-horizontal stroke as a horizontal bar for 0.45s) */
 .stroke{
   position:absolute;z-index:1;pointer-events:none;border-radius:999px;
   transform-origin:left center;
+  transform:rotate(var(--ang,0deg));
   box-shadow:0 0 18px rgba(182,243,74,.4);
 }
 /* word bank */
@@ -227,8 +230,8 @@ footer{text-align:center;color:var(--ink-faint);font-size:var(--t-small);padding
 /* wave for found letters */
 @keyframes wavePop{0%{transform:scale(1)}40%{transform:scale(1.35) rotate(-6deg)}100%{transform:scale(1)}}
 .cell.wave{animation:wavePop .5s cubic-bezier(.34,1.56,.64,1)}
-/* stroke draw-in */
-@keyframes drawIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* stroke draw-in — grows along the word's own axis, never flashes horizontal */
+@keyframes drawIn{from{transform:rotate(var(--ang,0deg)) scaleX(0)}to{transform:rotate(var(--ang,0deg)) scaleX(1)}}
 .stroke.draw{animation:drawIn .45s cubic-bezier(.34,1.3,.64,1)}
 /* narrow screens: bank below grid */
 @media (max-width:760px){
@@ -518,6 +521,27 @@ const WS = (() => {
     return out.length ? out : [{ r: anchor.r, c: anchor.c }];
   }
 
+  /* Pure geometry for the highlight capsules (found-word strokes + live
+   * ribbon). The capsule's pivot sits `leadFrac * cell` BEHIND the first
+   * point ALONG the word/drag direction (ux,uy) — never in a fixed screen
+   * axis. The old code always led in -x, which shifted every non-left-to-
+   * right capsule off its letters (0.45 cell for verticals, 0.9 cell along-
+   * axis for reversed horizontals). Returns CSS-ready values; the capsule's
+   * centerline passes through BOTH endpoints for any of the 8 directions. */
+  function capsuleGeometry(x1, y1, x2, y2, cell, leadFrac) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const dist = Math.hypot(dx, dy);
+    const ux = dist ? dx / dist : 1, uy = dist ? dy / dist : 0;
+    const lead = cell * leadFrac;
+    return {
+      left: x1 - lead * ux,
+      top: y1 - lead * uy - cell * 0.47,
+      width: dist + lead * 2,
+      height: cell * 0.94,
+      angDeg: Math.atan2(dy, dx) * 180 / Math.PI
+    };
+  }
+
   /* ------------------------------------------------------------
      Selection engine — the rebuilt gesture state machine.
      - One activePointerId owns the gesture; second pointers ignored.
@@ -638,7 +662,8 @@ const WS = (() => {
 
   return {
     DIRS, makeRng, shuffle, generate, letterAt, placementLetters,
-    validateSelection, resolveSubmission, snapDir, linePath, newGesture,
+    validateSelection, resolveSubmission, snapDir, linePath, capsuleGeometry,
+    newGesture,
     scoreFor, timeBonus, fmtTime, saveKey, bestKey, serialize, deserialize
   };
 })();
@@ -800,22 +825,33 @@ function cellCenter(r, c) {
   const rc = boardRect();
   return { x: rc.left + (c + 0.5) * rc.width / S.size, y: rc.top + (r + 0.5) * rc.height / S.size };
 }
+/* Origin for the absolutely-positioned overlay layers (stroke/ribbon/trail):
+ * their containing block is .board-wrap's PADDING box, not its border box —
+ * positioning against the border box shifted every overlay by the 1px glass
+ * border. (Found by CDP measurement: 1px systematic perpendicular residual
+ * on all strokes after the pivot fix.) */
+function layerOrigin() {
+  const wrap = boardEl.parentElement;
+  const r = wrap.getBoundingClientRect();
+  const cs = getComputedStyle(wrap);
+  return {
+    x: r.left + (parseFloat(cs.borderLeftWidth) || 0),
+    y: r.top + (parseFloat(cs.borderTopWidth) || 0)
+  };
+}
 function positionRibbon(path) {
   if (!path.length) { ribbonEl.classList.remove('on'); return; }
   const a = cellCenter(path[0].r, path[0].c);
   const b = cellCenter(path[path.length - 1].r, path[path.length - 1].c);
-  const wrap = boardEl.parentElement.getBoundingClientRect();
-  const x1 = a.x - wrap.left, y1 = a.y - wrap.top;
-  const x2 = b.x - wrap.left, y2 = b.y - wrap.top;
-  const dx = x2 - x1, dy = y2 - y1;
-  const dist = Math.hypot(dx, dy);
+  const o = layerOrigin();
   const cell = boardRect().width / S.size;
-  const len = Math.max(dist, cell * 0.9);
-  ribbonEl.style.height = (cell * 0.94) + 'px';
-  ribbonEl.style.width = len + 'px';
-  ribbonEl.style.left = (x1 - cell * 0.47) + 'px';
-  ribbonEl.style.top = (y1 - cell * 0.47) + 'px';
-  ribbonEl.style.transform = 'rotate(' + Math.atan2(dy, dx) + 'rad) scaleX(' + (len ? 1 : 0.001) + ')';
+  // pivot sits half a cell behind the drag start ALONG the drag direction
+  const g = WS.capsuleGeometry(a.x - o.x, a.y - o.y, b.x - o.x, b.y - o.y, cell, 0.47);
+  ribbonEl.style.height = g.height + 'px';
+  ribbonEl.style.width = g.width + 'px';
+  ribbonEl.style.left = g.left + 'px';
+  ribbonEl.style.top = g.top + 'px';
+  ribbonEl.style.transform = 'rotate(' + g.angDeg + 'deg)';
   ribbonEl.classList.add('on');
 }
 function clearRibbon() {
@@ -826,19 +862,19 @@ function clearRibbon() {
 /* permanent stroke behind a found word, with draw-in */
 function addStroke(p) {
   const a = cellCenter(p.r, p.c), b = cellCenter(p.r + p.dr * (p.word.length - 1), p.c + p.dc * (p.word.length - 1));
-  const wrap = boardEl.parentElement.getBoundingClientRect();
-  const x1 = a.x - wrap.left, y1 = a.y - wrap.top;
-  const x2 = b.x - wrap.left, y2 = b.y - wrap.top;
-  const dist = Math.hypot(x2 - x1, y2 - y1);
+  const o = layerOrigin();
   const cell = boardRect().width / S.size;
+  // pivot sits 0.45 cell behind the first letter ALONG the word's direction,
+  // so the capsule is centered on the word for all 8 directions
+  const g = WS.capsuleGeometry(a.x - o.x, a.y - o.y, b.x - o.x, b.y - o.y, cell, 0.45);
   const s = document.createElement('div');
   s.className = 'stroke draw';
   s.style.background = 'linear-gradient(180deg,rgba(198,255,110,.85),rgba(140,205,45,.8))';
-  s.style.height = (cell * 0.94) + 'px';
-  s.style.width = (dist + cell * 0.9) + 'px';
-  s.style.left = (x1 - cell * 0.45) + 'px';
-  s.style.top = (y1 - cell * 0.47) + 'px';
-  s.style.transform = 'rotate(' + Math.atan2(y2 - y1, x2 - x1) + 'rad)';
+  s.style.height = g.height + 'px';
+  s.style.width = g.width + 'px';
+  s.style.left = g.left + 'px';
+  s.style.top = g.top + 'px';
+  s.style.setProperty('--ang', g.angDeg + 'deg');
   strokeLayer.appendChild(s);
   for (let k = 0; k < p.word.length; k++) {
     const el = cellEls[p.r + p.dr * k][p.c + p.dc * k];
@@ -854,8 +890,8 @@ function addStroke(p) {
 const trailEl = $('trail'), trailLine = $('trailLine');
 let trailPts = [], trailToken = 0;
 function trailWrapPos(clientX, clientY) {
-  const r = boardEl.parentElement.getBoundingClientRect();
-  return { x: clientX - r.left, y: clientY - r.top };
+  const o = layerOrigin();
+  return { x: clientX - o.x, y: clientY - o.y };
 }
 function trailRender() {
   trailLine.setAttribute('points', trailPts.map((p) => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' '));
