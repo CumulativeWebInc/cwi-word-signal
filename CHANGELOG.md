@@ -1,3 +1,9 @@
+## 2.0.0 — 2026-09-24 — Full rebuild per Black's iPhone defect order
+- Rebuilt from scratch: new coordinate-math selection engine (live ribbon, diff-based painting, single-pointer gesture ownership) — drag-select now precise and responsive on touch
+- 2026 design language: aurora background, glassmorphism, Sora/Inter, wave + confetti animations
+- Tests: 352/352 PASS (node), 600-game fuzz 0 failures; node --check clean
+- Kept: CWI logo, Word Signal™, catalog themes, Listen dialog, CTA + listening-room try-link, © 2026, localStorage saves, deep links
+
 # Word Signal™ — changelog
 
 ## 1.1.0 — 2026-09-23
