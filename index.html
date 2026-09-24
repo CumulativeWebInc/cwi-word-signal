@@ -457,6 +457,30 @@ const WS = (() => {
     return { ok: false, word: null };
   }
 
+  // Forgiving submit resolution (touch-fat-finger fix, 2026-09-24).
+  // A thumb's reported touch point can land in a grid gap or on a cell edge,
+  // shifting the touch-down anchor one cell off while the drag SHAPE
+  // (direction + length toward the release target) is exactly right.
+  // When the direct string misses, retry with the anchor shifted one cell in
+  // each of the 8 neighbor positions, re-deriving the straight-line path
+  // from the release target each time. Accepts only real bank words that are
+  // not already found. Only ever converts would-be misses into hits —
+  // direct hits (including already-found words) are never re-interpreted.
+  // Pure: no DOM. o = {anchor:{r,c}, target:{r,c}, size, letterAt(r,c)->ch, words, found:Array}
+  function resolveSubmission(o) {
+    const SHIFTS = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+    for (const s of SHIFTS) {
+      const a = { r: o.anchor.r + s[0], c: o.anchor.c + s[1] };
+      const path = linePath(a, o.target, o.size);
+      const str = path.map((p) => o.letterAt(p.r, p.c)).join('');
+      const v = validateSelection(str, o.words);
+      if (v.ok && o.found.indexOf(v.word) === -1) {
+        return { ok: true, word: v.word, str, path, anchor: a, shifted: true };
+      }
+    }
+    return { ok: false, word: null };
+  }
+
   // Snap an (r,c) delta to the nearest of the 8 straight-line directions.
   function snapDir(dr, dc) {
     if (dr === 0 && dc === 0) return { dr: 0, dc: 0 };
@@ -536,11 +560,16 @@ const WS = (() => {
       },
       up(e) {
         if (activeId === null || e.pointerId !== activeId) return false;
-        const submitPath = path.slice();
+        const target = cellFromPoint(e.clientX, e.clientY); // release cell (for the forgiving retry)
+        const submitPath = path.slice();                    // exactly what the finger painted
+        const submitAnchor = { r: anchor.r, c: anchor.c };
         const didMove = moved || submitPath.length > 1;
         this._reset();
         if (!didMove) { o.onTap(); return 'tap'; }   // tap: no submit, no penalty
-        o.onSubmit(submitPath.map((p) => o.letterAt(p.r, p.c)).join(''), submitPath);
+        o.onSubmit({
+          str: submitPath.map((p) => o.letterAt(p.r, p.c)).join(''),
+          path: submitPath, anchor: submitAnchor, target: { r: target.r, c: target.c }
+        });
         return 'submit';
       },
       cancel(e) {
@@ -596,7 +625,7 @@ const WS = (() => {
 
   return {
     DIRS, makeRng, shuffle, generate, letterAt, placementLetters,
-    validateSelection, snapDir, linePath, newGesture,
+    validateSelection, resolveSubmission, snapDir, linePath, newGesture,
     scoreFor, timeBonus, fmtTime, saveKey, bestKey, serialize, deserialize
   };
 })();
@@ -836,9 +865,19 @@ document.addEventListener('visibilitychange', () => {
   else if (S.running && !S.won) startTimer();
 });
 
-function submitSelection(str, path) {
+function submitSelection(sel) {
+  // sel: {str, path, anchor, target} from the gesture's pointerup
   clearRibbon();
-  const res = WS.validateSelection(str, S.words);
+  const lat = (r, c) => WS.letterAt(S.cells, S.size, r, c);
+  let res = WS.validateSelection(sel.str, S.words);
+  if (!res.ok) {
+    // fat-finger forgiveness: the drag shape may be right with a 1-cell-off anchor
+    const r2 = WS.resolveSubmission({
+      anchor: sel.anchor, target: sel.target, size: S.size,
+      letterAt: lat, words: S.words, found: S.found
+    });
+    if (r2.ok) res = { ok: true, word: r2.word };
+  }
   if (res.ok && !S.found.includes(res.word)) {
     const p = S.placements.find((pl) => pl.word === res.word);
     S.found.push(res.word);
