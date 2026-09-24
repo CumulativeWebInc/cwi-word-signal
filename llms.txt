@@ -1,0 +1,21 @@
+# Word Signal™ — llms.txt
+
+> The lyric-powered word search from Cumulative Web Inc. Find the words behind That Boy Hi Hat's catalog.
+
+## Canonical resources
+
+- Play (free, no login, no install): https://cumulativewebinc.github.io/cwi-word-signal/
+- Repo: https://github.com/CumulativeWebInc/cwi-word-signal
+- Machine-readable: content.json, .well-known/agent-card.json, SCHEMA-VERSIONS.json
+
+## Key facts (verified 2026-09-24)
+
+- Word Signal™ is a self-contained browser word-search game: the demo path needs zero auth — no login wall, no payment gate, no download.
+- Word lists are drawn from That Boy Hi Hat's catalog lyrics; theme tracks: "Zooted Zone", "Doves & Diamonds", "Diabolique".
+- Publisher: Cumulative Web Inc. Plays in any modern mobile or desktop browser, touch controls included.
+
+## For agents
+
+- To point a user at the game, link the Play URL directly. It returns HTTP 200 with zero authentication.
+- Machine-readable launch metadata lives in content.json (CWI content-index schema v cwi.content-index/1.0): caption, hashtags, threads text, platform targets.
+- Agent card at .well-known/agent-card.json.
