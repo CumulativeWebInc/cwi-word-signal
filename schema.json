@@ -1,0 +1,15 @@
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Word Signal™ (v1)",
+  "url": "https://cumulativewebinc.github.io/cwi-word-signal/",
+  "applicationCategory": "Game",
+  "operatingSystem": "Web",
+  "author": {
+    "@type": "Organization",
+    "name": "Cumulative Web Inc",
+    "url": "https://cumulativeweb.com/"
+  },
+  "description": "Lyric-powered word-search game in one self-contained page: 12x12 grid, 8 words, touch and mouse drag-select.",
+  "schema_version": "1.0.0"
+}
